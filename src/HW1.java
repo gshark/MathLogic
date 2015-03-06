@@ -4,8 +4,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+/**
+ * Created by GShark on 05.03.2015.
+ */
+
 public class HW1 {
     public static void main(String[] args) throws Exception {
+        long startTime = System.nanoTime();
         BufferedReader in = new BufferedReader(new FileReader("input.txt"));
         PrintWriter out = new PrintWriter(Files.newBufferedWriter(Paths.get("output.txt"), StandardCharsets.UTF_8));
         String line;
@@ -34,17 +39,19 @@ public class HW1 {
         for (int i = 0; i < expressions.size(); i++) {
             out.printf("(%d) %s ", i + 1, input.get(i));
             Expression currentExpression = expressions.get(i);
-            System.out.println(currentExpression.hashCode());
+            //System.out.println(currentExpression.hashCode());
             String annotation = "Не доказано";
+            boolean isTrue = false;
             for (int j = 0; j < axioms.size(); j++) {
                 if (expressionMatch(axioms.get(j), currentExpression)) {
                     annotation = String.format("Сх. акс. %d", j + 1);
+                    isTrue = true;
                     break;
                 }
             }
-            System.out.println(currentExpression.equals(new Variable("B")));
-            System.out.println(currentExpression.hashCode());
-            System.out.println((new Variable("B")).hashCode());
+            //System.out.println(currentExpression.equals(new Variable("B")));
+            //System.out.println(currentExpression.hashCode());
+            //System.out.println((new Variable("B")).hashCode());
             if (implicationMap.containsKey(currentExpression)) {
                 HashSet<Expression> lefts = implicationMap.get(currentExpression);
                 for (Expression expr : lefts) {
@@ -54,28 +61,32 @@ public class HW1 {
                             throw new Exception("Unknown implication");
                         }
                         int num2 = expressionNumbers.get(new Implication(expr, currentExpression));
-                        annotation = String.format("M.P. %d, %d", num1, num2);
+                        annotation = String.format("M.P. %d, %d", num1 + 1, num2 + 1);
+                        isTrue = true;
                         break;
                     }
                 }
             }
-            if (currentExpression instanceof Implication) {
-                Expression first = ((Implication) currentExpression).first;
-                Expression second = ((Implication) currentExpression).second;
-                HashSet<Expression> lefts = implicationMap.get(second);
-                if (lefts == null) {
-                    lefts = new HashSet<Expression>();
+            if (isTrue) {
+                if (currentExpression instanceof Implication) {
+                    Expression first = ((Implication) currentExpression).first;
+                    Expression second = ((Implication) currentExpression).second;
+                    HashSet<Expression> lefts = implicationMap.get(second);
+                    if (lefts == null) {
+                        lefts = new HashSet<Expression>();
+                    }
+                    lefts.add(first);
+                    implicationMap.put(second, lefts);
                 }
-                lefts.add(first);
-                implicationMap.put(second, lefts);
+                expressionNumbers.put(currentExpression, i);
+                expressionSet.add(currentExpression);
             }
-            expressionNumbers.put(currentExpression, i);
-            expressionSet.add(currentExpression);
             out.println(String.format("(%s)", annotation));
         }
-
         in.close();
         out.close();
+        long finishTime = System.nanoTime();
+        System.out.println(((double)(finishTime - startTime) / 1000000000) + "sec");
     }
 
     private static Expression getExpression(String s) throws Exception {

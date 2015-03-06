@@ -2,7 +2,12 @@
  * Created by GShark on 06.03.2015.
  */
 public class Expression {
-    boolean equals(Expression expression) throws Exception {
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Expression) ) {
+            return false;
+        }
+        Expression expression = (Expression) o;
         if (!this.getClass().equals(expression.getClass())) {
             return false;
         }
@@ -16,7 +21,7 @@ public class Expression {
         } else if (this instanceof Variable) {
             return ((Variable) this).getName().equals(((Variable) expression).getName());
         }
-        throw new Exception("Something strange in expression");
+        return false;
     }
 
 }
